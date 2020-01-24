@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title> Receitas </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    header, main {
+      max-width: 800px;
+      margin: auto;
+    }
+    fieldset {
+      margin: 1em 0;
+      counter-reset: ingr;
+    }
+    label {
+      display: block;
+      margin: .5em 0;
+    }
+    label::before {
+      counter-increment: ingr;
+      content: "Ingrediente " counter(ingr) ":";
+      margin-right: .5em;
+    }
+    input[type="text"] {
+      padding: .25em .5em;
+      background: #fff;
+      border: 1px solid #000;
+      outline: 0;
+      margin-right: .25em;
+    }
+    input[type="text"]:focus {
+      border-color: #409eff;
+    }
+    button {
+      padding: .25em .5em;
+      background: #e0e0e0;
+      border: 1px solid #000;
+      outline: 0;
+    }
+    button:focus {
+      border-color: #409eff;
+    }
+    button:active {
+      background: #c0c0c0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Receitas</h1>
+    <p>Quais receitas você pode fazer com os ingredientes da sua casa?</p>
+  </header>
+  <main>
+    <fieldset>
+      <legend>Adicione aqui os ingredientes disponíveis</legend>
+      <label><input type="text"></label>
+      <button id="anchor">+</button>
+      <script>
+        const anchor = document.getElementById("anchor");
+        anchor.onclick = () => {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          const button = document.createElement("button");
+          button.textContent = "-";
+          button.onclick = () => button.parentNode.remove();
+          input.setAttribute("type","text");
+          label.appendChild(input);
+          label.appendChild(button);
+          anchor.parentNode.insertBefore(label,anchor);
+        }
+      </script>
+    </fieldset>
+    <button onclick="search()">Procurar</button>
+    <output></output>
+    <section id="recipe-section">
+      <template id="recipe-template">
+        <article>
+          <h2>(nome)</h2>
+          <h3>Ingredientes</h3>
+          <ul></ul>
+          <h3>Modo de preparo</h3>
+          <ol></ol>
+        </article>
+      </template>
+    </section>
+    <script>
+      const section = document.getElementById("recipe-section");
+      const template = document.getElementById("recipe-template");
+      function search() {
+        const ingredients =
+          [...document.querySelectorAll(`input[type="text"]`)]
+            .map(i => i.value.toLowerCase())
+            .filter(i => i.length > 0);
+
+        if(ingredients.length <= 0)
+          return;
+
+        const recipe = template.content.cloneNode(true);
+        if(ingredients.length > 1) {
+          const last_ing = ingredients.pop();
+          const ing_list = ingredients.join(", ");
+          ingredients.push(last_ing);
+          recipe.querySelector("h2").textContent = `Sopa de ${ing_list} e ${last_ing}`;
+        } else {
+          recipe.querySelector("h2").textContent = `Sopa de ${ingredients[0]}`;
+        }
+
+        const ing_ul = recipe.querySelector("ul");
+        ingredients.forEach((i,index) => {
+          const li = document.createElement("li");
+          const em = document.createElement("em");
+          em.textContent = i;
+          const is_last = ingredients.length-1 === index;
+          const txt = document.createTextNode(` a gosto${is_last ? '.' : ';'}`);
+          li.appendChild(em);
+          li.appendChild(txt);
+          ing_ul.appendChild(li);
+        });
+        const ing_ol = recipe.querySelector("ol");
+        const step_1 = document.createElement("li");
+        step_1.textContent = "Encha uma panela com água, e coloque-a no fogo. ";
+        ing_ol.appendChild(step_1);
+        ingredients.forEach((i,index) => {
+          const step_i = document.createElement("li");
+          const words = ["Então", "Em seguida", "Depois", "Após isso", "Aí"];
+          step_i.textContent = `${words[~~(Math.random()*words.length)]}, adicione ${i}. `;
+          ing_ol.appendChild(step_i);
+        });
+        const step_n = document.createElement("li");
+        step_n.textContent = "Pronto! Sirva quente ou gelado, como preferir.";
+        ing_ol.appendChild(step_n);
+
+        while(section.firstChild)
+          section.firstChild.remove();
+
+        section.appendChild(recipe);
+
+        section.previousElementSibling.textContent = "1 resultado encontrado";
+      }
+    </script>
+  </main>
+</body>
+</html>
